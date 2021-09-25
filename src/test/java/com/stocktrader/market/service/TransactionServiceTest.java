@@ -11,7 +11,7 @@ import com.stocktrader.market.repo.StockHistoryRepo;
 import com.stocktrader.market.repo.StockRepo;
 import com.stocktrader.market.repo.TraderRepo;
 import com.stocktrader.market.repo.TransactionRepo;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -32,8 +32,9 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class TransactionServiceTest {
     private final static BigInteger QUANTITY = BigInteger.valueOf(100L);
-    private static TransactionRequest transactionRequest;
-    private static TraderDao traderDao;
+    private static final String STOCK_SYMBOL = "STOCK";
+    private TransactionRequest transactionRequest;
+    private TraderDao traderDao;
     @Mock
     TraderRepo mockTraderRepo;
     @Mock
@@ -55,9 +56,9 @@ class TransactionServiceTest {
     @Mock
     private ConstraintViolation<TraderPortfolio> mockConstraintViolation;
 
-    @BeforeAll
-    static void setup() {
-        transactionRequest = new TransactionRequest("AAA", TransactionType.BUY, QUANTITY);
+    @BeforeEach
+    void setup() {
+        transactionRequest = new TransactionRequest(STOCK_SYMBOL, TransactionType.BUY, QUANTITY);
         traderDao = new TraderDao("Test", BigInteger.valueOf(1000L));
     }
 
@@ -70,14 +71,15 @@ class TransactionServiceTest {
         when(mockValidator.validate(any(TraderPortfolio.class), any(Class.class))).thenReturn(Set.of());
         when(mockStockHistory.getPrice()).thenReturn(BigInteger.ONE);
         when(mockStock.getTotalQuantity()).thenReturn(BigInteger.valueOf(100L));
+        when(mockStock.getSymbol()).thenReturn(STOCK_SYMBOL);
 
         TransactionType transactionType = TransactionType.BUY;
 
         transactionService.handleTransaction(transactionRequest, traderDao);
 
-        verify(mockStockRepo).findById("AAA");
+        verify(mockStockRepo).findById(STOCK_SYMBOL);
         verify(mockStockHistoryRepo).findFirst1ByStockOrderByTime(mockStock);
-//        verify(mockValidator).validate(samePropertyValuesAs(trader.buildPortfolio()), TraderPortfolio.class);
+        verify(mockValidator).validate(any(TraderPortfolio.class));
         assertEquals(1, traderDao.getTrades().stream().filter(trade -> VerifyTransactionParams(transactionType, trade)).count());
         verify(mockTraderRepo).save(traderDao);
     }
@@ -96,7 +98,7 @@ class TransactionServiceTest {
 
         transactionService.handleTransaction(transactionRequest, traderDao);
 
-        verify(mockStockRepo).findById("AAA");
+        verify(mockStockRepo).findById(STOCK_SYMBOL);
         verify(mockStockHistoryRepo).findFirst1ByStockOrderByTime(mockStock);
         verify(mockStockService).getCurrentlyTradeableStockQuantity(mockStock);
 //        verify(mockValidator).validate(samePropertyValuesAs(trader.buildPortfolio()), TraderPortfolio.class);
@@ -118,7 +120,7 @@ class TransactionServiceTest {
 
         transactionService.handleTransaction(transactionRequest, traderDao);
 
-        verify(mockStockRepo).findById("AAA");
+        verify(mockStockRepo).findById(STOCK_SYMBOL);
         verify(mockStockHistoryRepo).findFirst1ByStockOrderByTime(mockStock);
 //        verify(mockValidator).validate(samePropertyValuesAs(trader.buildPortfolio()), TraderPortfolio.class);
         assertEquals(1, traderDao.getTrades().stream().filter(trade -> VerifyTransactionParams(transactionType, trade)).count());

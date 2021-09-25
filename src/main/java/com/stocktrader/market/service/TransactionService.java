@@ -1,5 +1,7 @@
 package com.stocktrader.market.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stocktrader.market.model.dao.TraderDao;
 import com.stocktrader.market.model.dao.Transaction;
 import com.stocktrader.market.model.dto.TraderPortfolio;
@@ -46,6 +48,14 @@ public class TransactionService {
         System.out.println("Validating");
         final Set<ConstraintViolation<TraderPortfolio>> validationErrors = validator.validate(traderPortfolio);
 
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            System.out.println(traderPortfolio.get());
+            System.out.println(mapper.writeValueAsString(traderPortfolio));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+
         if (validationErrors.isEmpty()) {
             System.out.println("Validated : " + transactionRequest.getStock());
             final BigInteger currentlyTradeableStockQuantity = stockService.getCurrentlyTradeableStockQuantity(constructedTransaction.getStockTraded().getStock());
@@ -73,7 +83,9 @@ public class TransactionService {
     Cannot transact negative quantites and transaction cannot exceed total available in market.
      */
     private boolean stockHasSufficientQuantity(final BigInteger totalStock, final BigInteger quantityAfterTransaction) {
-        return 0 <= quantityAfterTransaction.compareTo(BigInteger.ZERO) && totalStock.compareTo(quantityAfterTransaction) >= 0;
+        final boolean b = 0 <= quantityAfterTransaction.compareTo(BigInteger.ZERO) && totalStock.compareTo(quantityAfterTransaction) >= 0;
+        System.out.println("Sufficient Quantity : " + b);
+        return b;
     }
 
     private @Validated

@@ -40,6 +40,10 @@ public class StockHistory {
         return price;
     }
 
+    public void setPrice(BigInteger price) {
+        this.price = price;
+    }
+
     public Instant getTime() {
         return time;
     }
@@ -60,4 +64,5 @@ public class StockHistory {
     public boolean isClosingTime() {
         return openClose != null && OpenOrClose.CLOSE == openClose.openClose;
     }
+
 }

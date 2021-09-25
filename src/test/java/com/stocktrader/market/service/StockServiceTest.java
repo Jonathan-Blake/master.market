@@ -16,7 +16,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigInteger;
 import java.time.Instant;
@@ -113,7 +115,7 @@ class StockServiceTest {
 
     @Test
     void getPriceHistoryOfStocks() {
-        when(stockRepo.findById(anyString())).thenReturn(Optional.of(stockList.get(0)));
+        when(stockRepo.findAll(any(Pageable.class))).thenReturn(new PageImpl<>(List.of(stockList.get(0)), Pageable.unpaged(), 1));
         when(stockHistoryRepo.findFirst1ByStockOrderByTime(any(Stock.class))).thenReturn(Optional.of(stockHistoryList.get(0)));
 
         Page<StockResponse> stockPricePage = stockService.getPriceHistoryOfStocks(mockPageRequest, NOW.minus(1, ChronoUnit.DAYS), NOW);
@@ -124,6 +126,8 @@ class StockServiceTest {
 
     @Test
     void getStockCurrentDetails() {
+
+        stockService.getStockCurrentDetails("CCC");
         fail();
     }
 

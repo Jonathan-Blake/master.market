@@ -45,7 +45,7 @@ class PortfolioInfoTest {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
-        assertEquals(CURRENT_PRICE, ret.price);
+        assertEquals(CURRENT_PRICE, ret.currentPrice);
         assertEquals(ORIGINAL_PRICE, ret.averagePurchase);
         assertEquals(QUANTITY, ret.quantity);
     }
@@ -70,7 +70,7 @@ class PortfolioInfoTest {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
-        assertEquals(CURRENT_PRICE, ret.price);
+        assertEquals(CURRENT_PRICE, ret.currentPrice);
         assertEquals(ORIGINAL_PRICE, ret.averagePurchase);
         assertEquals(QUANTITY.multiply(BigInteger.valueOf(5L)), ret.quantity);
     }
@@ -96,7 +96,7 @@ class PortfolioInfoTest {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
-        assertEquals(CURRENT_PRICE, ret.price);
+        assertEquals(CURRENT_PRICE, ret.currentPrice);
         assertEquals(BigInteger.valueOf(45L), ret.averagePurchase);
         assertEquals(QUANTITY.multiply(BigInteger.valueOf(6L)), ret.quantity);
     }

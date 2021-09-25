@@ -1,7 +1,6 @@
 package com.stocktrader.market.model.dao;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stocktrader.market.TestDataUtil;
 import com.stocktrader.market.model.dto.TraderPortfolio;
@@ -145,25 +144,16 @@ class TraderDaoTest {
         }
 
         @Test
-        void addTrade_alwaysSumsToSameNextTotal() {
+        void addTrade_alwaysSumsToSameNextTotal() { // This test is a fantastic example of the scaling concerns as
             TraderDao traderDao = new TraderDao();
             traderDao.funds = TRADER_FUNDS;
             ObjectMapper mapper = new ObjectMapper();
             mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-            for (Transaction transaction : testDataUtil.generateTransactions(100)) {
-                try {
-                    System.out.println("Next Transaction :" + mapper.writeValueAsString(transaction));
-                } catch (JsonProcessingException e) {
-                    e.printStackTrace();
-                }
+            for (Transaction transaction : testDataUtil.generateTransactions(500, new TestDataUtil.GenerateTransactionParams(100, 50L, null))) {
+                transaction.getStockTraded().setPrice(BigInteger.TEN); // Price must always be constant otherwise portfolio value will increase.
                 traderDao.addNewTrade(transaction);
                 final TraderPortfolio traderPortfolio = TraderPortfolio.buildPortfolio(traderDao);
-                try {
-                    System.out.println("@@@@ Total Value: " + mapper.writeValueAsString(traderPortfolio.get()));
-                } catch (JsonProcessingException e) {
-                    e.printStackTrace();
-                }
-                assertEquals(TRADER_FUNDS, TraderPortfolio.buildPortfolio(traderDao).getTotalValue());
+                assertEquals(TRADER_FUNDS, traderPortfolio.getTotalValue());
             }
         }
     }
