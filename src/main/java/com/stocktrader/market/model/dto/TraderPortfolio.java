@@ -43,12 +43,7 @@ public class TraderPortfolio extends RepresentationModel<TraderPortfolio> {
 
     public BigInteger getTotalValue() {
         var value = new AtomicBigInt();
-        portfolio.values().forEach(portfolioInfo -> {
-            BigInteger current = value.get();
-            if (current.compareTo(value.incrementAndGet(portfolioInfo.getTotalValue())) == portfolioInfo.getTotalValue().compareTo(BigInteger.ZERO)) {
-                throw new RuntimeException("Integer Overflow");
-            }
-        });
+        portfolio.values().forEach(portfolioInfo -> value.incrementAndGet(portfolioInfo.getTotalValue()));
         return value.get().or(BigInteger.ZERO);
     }
 

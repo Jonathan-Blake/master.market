@@ -20,7 +20,8 @@ public class PortfolioInfo {
     }
 
     public PortfolioInfo linkNewTrade(Transaction trade) {
-        if (trade.getTransactionType() == TransactionType.BUY) {
+        if (trade.getTransactionType() == TransactionType.BUY &&
+                trade.getQuantity().compareTo(BigInteger.ZERO) > 0) {
             if (averagePurchase == null) {
                 averagePurchase = trade.getStockTraded().getPrice();
             } else {
@@ -35,6 +36,10 @@ public class PortfolioInfo {
 
     public BigInteger getTotalValue() {
         return currentPrice.multiply(quantity);
+    }
+
+    public BigInteger getQuantity() {
+        return quantity;
     }
 
 }

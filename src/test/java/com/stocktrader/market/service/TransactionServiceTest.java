@@ -21,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 import java.math.BigInteger;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 
@@ -68,7 +69,8 @@ class TransactionServiceTest {
         when(mockStockHistory.getStock()).thenReturn(mockStock);
         when(mockStockRepo.findById(anyString())).thenReturn(Optional.of(mockStock));
         when(mockStockService.getCurrentlyTradeableStockQuantity(any(Stock.class))).thenReturn(BigInteger.valueOf(100L));
-        when(mockValidator.validate(any(TraderPortfolio.class), any(Class.class))).thenReturn(Set.of());
+        when(mockValidator.validate(any(TraderPortfolio.class), any(Class.class))).thenReturn(Collections.emptySet());
+        when(mockValidator.validate(any(Transaction.class), any(Class.class))).thenReturn(Collections.emptySet());
         when(mockStockHistory.getPrice()).thenReturn(BigInteger.ONE);
         when(mockStock.getTotalQuantity()).thenReturn(BigInteger.valueOf(100L));
         when(mockStock.getSymbol()).thenReturn(STOCK_SYMBOL);
@@ -90,7 +92,8 @@ class TransactionServiceTest {
         when(mockStockHistory.getStock()).thenReturn(mockStock);
         when(mockStockRepo.findById(anyString())).thenReturn(Optional.of(mockStock));
         when(mockStockService.getCurrentlyTradeableStockQuantity(any(Stock.class))).thenReturn(BigInteger.valueOf(50L));
-        when(mockValidator.validate(any(TraderPortfolio.class), any(Class.class))).thenReturn(Set.of());
+        when(mockValidator.validate(any(TraderPortfolio.class), any(Class.class))).thenReturn(Collections.emptySet());
+        when(mockValidator.validate(any(Transaction.class), any(Class.class))).thenReturn(Collections.emptySet());
         when(mockStockHistory.getPrice()).thenReturn(BigInteger.TEN);
 //        when(mockStock.getTotalQuantity()).thenReturn(BigInteger.valueOf(50l));
 
@@ -114,6 +117,7 @@ class TransactionServiceTest {
         when(mockStockHistory.getStock()).thenReturn(mockStock);
         when(mockStockHistory.getPrice()).thenReturn(BigInteger.TEN);
 
+        when(mockValidator.validate(any(Transaction.class), any(Class.class))).thenReturn(Collections.emptySet());
         when(mockValidator.validate(any(TraderPortfolio.class), any(Class.class))).thenReturn(Set.of(mockConstraintViolation));
 
         TransactionType transactionType = TransactionType.BUY;

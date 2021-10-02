@@ -1,7 +1,5 @@
 package com.stocktrader.market.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stocktrader.market.model.dao.TraderDao;
 import com.stocktrader.market.model.dto.TransactionRequest;
 import com.stocktrader.market.service.TransactionService;
@@ -32,19 +30,22 @@ public class TransactionController {
     }
 
     @PostMapping
+//    @PreAuthorize("hasAuthority('transactions')")
     public HttpEntity<String> transaction(@RequestBody @Validated TransactionRequest transactionRequest) {
         ResponseEntity<String> ret;
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            mapper.writeValueAsString(transactionRequest);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
+        // This has been removed as we were unable to get the scopes working on the front end
+        // the commented code was left as an example of how it would be done.
+//        Authentication user = SecurityContextHolder.getContext().getAuthentication();
+//        if(! user.getAuthorities().contains("transactions")){
+//            return new ResponseEntity<>("Missing required scopes", HttpStatus.UNAUTHORIZED);
+//        }
         if (transactionService.handleTransaction(transactionRequest, trader)) {
             ret = new ResponseEntity<>("Transaction Successfully Completed", HttpStatus.OK);
         } else {
             ret = new ResponseEntity<>("Transaction Failed", HttpStatus.BAD_REQUEST);
         }
+//        }
         return ret;
+
     }
 }

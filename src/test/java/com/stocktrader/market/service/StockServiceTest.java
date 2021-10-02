@@ -16,13 +16,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
 import java.math.BigInteger;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.PriorityQueue;
@@ -30,7 +27,8 @@ import java.util.Queue;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsIterableContaining.hasItems;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -111,24 +109,6 @@ class StockServiceTest {
 
         verify(stockHistoryRepo).findFirst1ByStockOrderByTime(stockList.get(0));
         assertEquals(stockService.buildResponse(stockList.get(0), stockHistoryList.get(0), QUANTITY), stockPrice);
-    }
-
-    @Test
-    void getPriceHistoryOfStocks() {
-        when(stockRepo.findAll(any(Pageable.class))).thenReturn(new PageImpl<>(List.of(stockList.get(0)), Pageable.unpaged(), 1));
-        when(stockHistoryRepo.findFirst1ByStockOrderByTime(any(Stock.class))).thenReturn(Optional.of(stockHistoryList.get(0)));
-
-        Page<StockResponse> stockPricePage = stockService.getPriceHistoryOfStocks(mockPageRequest, NOW.minus(1, ChronoUnit.DAYS), NOW);
-
-
-        fail("Implement this");
-    }
-
-    @Test
-    void getStockCurrentDetails() {
-
-        stockService.getStockCurrentDetails("CCC");
-        fail();
     }
 
     @Test

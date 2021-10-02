@@ -1,10 +1,7 @@
 package com.stocktrader.market.repo;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stocktrader.market.model.dao.Stock;
 import com.stocktrader.market.model.dao.StockHistory;
-import com.stocktrader.market.model.dao.TraderDao;
 import com.stocktrader.market.model.ref.OpenOrClose;
 import com.stocktrader.market.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,21 +38,6 @@ public class DataLoader {
         };
 //         Rabobank RBS Duplicate Key need to change to look at name
         Arrays.stream(stocksToCreate).forEach(this::generateAndSaveRandomStockData);
-
-        TraderDao t = new TraderDao("Test", BigInteger.valueOf(10000L));
-        traderRepo.save(t);
-
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            System.out.println(mapper.writeValueAsString(
-                    stockHistoryRepo.findFirst1ByStockAndOpenClose_OpenCloseOrderByTime(
-                            stockRepo.findById("HSBC").get(),
-                            OpenOrClose.OPEN
-                    ).get()
-            ));
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
     }
 
     private void generateAndSaveRandomStockData(String stockCode) {
