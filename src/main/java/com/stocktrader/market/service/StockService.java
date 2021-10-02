@@ -17,12 +17,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
-import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -51,12 +49,11 @@ public class StockService {
 
     public StockResponse getStockCurrentDetails(String symbol) {
         Optional<Stock> stock = stockRepo.findById(symbol);
-        if (stock.isPresent()) {
-            Optional<StockHistory> stockPrice = stockHistoryRepo.findFirst1ByStockOrderByTime(stock.get());
-            return buildResponse(stock.get(), stockPrice.get(), getCurrentlyTradeableStockQuantity(stock.get()));
-        } else {
-            return null;
-        }
+        final StockResponse[] ret = {null};
+        stock.ifPresent(value -> stockHistoryRepo.findFirst1ByStockOrderByTime(value)
+                .ifPresent(sp -> ret[0] = buildResponse(value, sp, getCurrentlyTradeableStockQuantity(value))));
+        return ret[0];
+
     }
 
     public StockResponse buildResponse(Stock stock, StockHistory stockHistory, BigInteger currentlyTradeableStockQuantity) {
@@ -78,22 +75,6 @@ public class StockService {
         ret.setQuantity(currentlyTradeableStockQuantity);
         ret.add(linkTo(methodOn(StockController.class).getStock(stock.getSymbol())).withSelfRel());
         return ret;
-    }
-
-    public Page<StockResponse> getPriceHistoryOfStocks(PageRequest pageRequest, Instant startDate, Instant endDate) {
-        //Chose not to use Page's map method because it is not parallel, due to the database calls this seemed to outweigh
-        // the performance impact that synchronisation might have otherwise it mimics the logic
-        final Page<Stock> allStocks = stockRepo.findAll(pageRequest);
-        List<StockResponse> convertedList = allStocks.stream().parallel()
-                .flatMap(stock -> buildResponseHistory(
-                        stock,
-                        stockHistoryRepo.findAllByStockAndTimeBetween(stock, startDate, endDate))
-                ).collect(Collectors.toList());
-        return new PageImpl<>(convertedList, allStocks.getPageable(), allStocks.getTotalElements());
-    }
-
-    public Stream<StockResponse> buildResponseHistory(Stock stock, Collection<StockHistory> history) {
-        return history.stream().map(each -> buildResponse(stock, each, stock.getTotalQuantity()));
     }
 
     public BigInteger getCurrentlyTradeableStockQuantity(Stock stock) {

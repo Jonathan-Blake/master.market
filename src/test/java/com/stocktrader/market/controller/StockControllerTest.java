@@ -85,17 +85,4 @@ class StockControllerTest {
         assertEquals(HttpStatus.NOT_FOUND, ((ResponseEntity) result).getStatusCode());
         verify(stockService).getStockCurrentDetails(SYMBOL);
     }
-
-    @Test
-    void getStockHistories() {
-        when(pagedResourcesAssembler.toModel(any(Page.class), any(Link.class))).thenReturn(mockPagedModelB);
-        when(stockService.getPriceHistoryOfStocks(any(PageRequest.class), any(Instant.class), any(Instant.class))).thenReturn(mockPage);
-
-        HttpEntity<PagedModel<StockResponse>> result = stockController.getStockHistories(SIZE, PAGE, INSTANT, INSTANT);
-
-        assertEquals(mockPagedModelB, result.getBody());
-        assertEquals(HttpStatus.OK, ((ResponseEntity) result).getStatusCode());
-        verify(stockService).getPriceHistoryOfStocks(PageRequest.of(PAGE, SIZE), INSTANT, INSTANT);
-        verify(pagedResourcesAssembler).toModel(mockPage, linkTo(methodOn(stockController.getClass()).getStockHistories(SIZE, PAGE, INSTANT, INSTANT)).withSelfRel());
-    }
 }

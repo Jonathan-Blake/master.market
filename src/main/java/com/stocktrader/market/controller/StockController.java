@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.time.Instant;
 import java.util.Arrays;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -53,17 +52,5 @@ public class StockController {
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-    }
-
-    @GetMapping("/history")
-    public HttpEntity<PagedModel<StockResponse>> getStockHistories(@RequestParam(defaultValue = "20") Integer size, @RequestParam(defaultValue = "0") Integer page,
-                                                                   @RequestParam() Instant startDate, @RequestParam() Instant endDate) {
-        return new ResponseEntity(
-                assembler.toModel(
-                        stockService.getPriceHistoryOfStocks(PageRequest.of(page, size), startDate, endDate),
-                        linkTo(methodOn(this.getClass()).getStockHistories(size, page, startDate, endDate)).withSelfRel()
-                ),
-                HttpStatus.OK
-        );
     }
 }

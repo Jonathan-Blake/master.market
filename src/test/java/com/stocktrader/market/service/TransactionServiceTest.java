@@ -25,7 +25,7 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -87,6 +87,55 @@ class TransactionServiceTest {
     }
 
     @Test
+    void handleTransaction_BuyThenSell() {
+        when(mockStockHistoryRepo.findFirst1ByStockOrderByTime(any(Stock.class))).thenReturn(Optional.of(mockStockHistory));
+        when(mockStockHistory.getStock()).thenReturn(mockStock);
+        when(mockStockRepo.findById(anyString())).thenReturn(Optional.of(mockStock));
+        when(mockStockService.getCurrentlyTradeableStockQuantity(any(Stock.class))).thenReturn(BigInteger.valueOf(100L));
+        when(mockValidator.validate(any(TraderPortfolio.class), any(Class.class))).thenReturn(Collections.emptySet());
+        when(mockValidator.validate(any(Transaction.class), any(Class.class))).thenReturn(Collections.emptySet());
+        when(mockStockHistory.getPrice()).thenReturn(BigInteger.ONE);
+        when(mockStock.getTotalQuantity()).thenReturn(BigInteger.valueOf(100L));
+        when(mockStock.getSymbol()).thenReturn(STOCK_SYMBOL);
+
+        assertTrue(transactionService.handleTransaction(transactionRequest, traderDao));
+        transactionRequest = new TransactionRequest(STOCK_SYMBOL, TransactionType.SELL, QUANTITY);
+        assertTrue(transactionService.handleTransaction(transactionRequest, traderDao));
+
+        verify(mockStockRepo, times(2)).findById(STOCK_SYMBOL);
+        verify(mockStockHistoryRepo, times(2)).findFirst1ByStockOrderByTime(mockStock);
+        verify(mockValidator, times(2)).validate(any(TraderPortfolio.class));
+        assertEquals(1, traderDao.getTrades().stream().filter(trade -> VerifyTransactionParams(TransactionType.BUY, trade)).count());
+        assertEquals(1, traderDao.getTrades().stream().filter(trade -> VerifyTransactionParams(TransactionType.SELL, trade)).count());
+        verify(mockTraderRepo, times(2)).save(traderDao);
+    }
+
+    @Test
+    void handleTransaction_BuyThenSellTwo_FailsOnce() {
+        when(mockStockHistoryRepo.findFirst1ByStockOrderByTime(any(Stock.class))).thenReturn(Optional.of(mockStockHistory));
+        when(mockStockHistory.getStock()).thenReturn(mockStock);
+        when(mockStockRepo.findById(anyString())).thenReturn(Optional.of(mockStock));
+        when(mockStockService.getCurrentlyTradeableStockQuantity(any(Stock.class))).thenReturn(BigInteger.valueOf(100L));
+        when(mockValidator.validate(any(TraderPortfolio.class), any(Class.class))).thenReturn(Collections.emptySet());
+        when(mockValidator.validate(any(Transaction.class), any(Class.class))).thenReturn(Collections.emptySet());
+        when(mockStockHistory.getPrice()).thenReturn(BigInteger.ONE);
+        when(mockStock.getTotalQuantity()).thenReturn(BigInteger.valueOf(100L));
+        when(mockStock.getSymbol()).thenReturn(STOCK_SYMBOL);
+
+        assertTrue(transactionService.handleTransaction(transactionRequest, traderDao));
+        transactionRequest = new TransactionRequest(STOCK_SYMBOL, TransactionType.SELL, QUANTITY);
+        assertTrue(transactionService.handleTransaction(transactionRequest, traderDao));
+        assertFalse(transactionService.handleTransaction(transactionRequest, traderDao));
+
+        verify(mockStockRepo, times(3)).findById(STOCK_SYMBOL);
+        verify(mockStockHistoryRepo, times(3)).findFirst1ByStockOrderByTime(mockStock);
+        verify(mockValidator, times(3)).validate(any(TraderPortfolio.class));
+        assertEquals(1, traderDao.getTrades().stream().filter(trade -> VerifyTransactionParams(TransactionType.BUY, trade)).count());
+        assertEquals(2, traderDao.getTrades().stream().filter(trade -> VerifyTransactionParams(TransactionType.SELL, trade)).count());
+        verify(mockTraderRepo, times(2)).save(traderDao);
+    }
+
+    @Test
     void handleTransaction_rejectsInvalidTransaction_insufficentTradeableQuantity_andDoesNotSaveToBD() {
         when(mockStockHistoryRepo.findFirst1ByStockOrderByTime(any(Stock.class))).thenReturn(Optional.of(mockStockHistory));
         when(mockStockHistory.getStock()).thenReturn(mockStock);
@@ -95,7 +144,6 @@ class TransactionServiceTest {
         when(mockValidator.validate(any(TraderPortfolio.class), any(Class.class))).thenReturn(Collections.emptySet());
         when(mockValidator.validate(any(Transaction.class), any(Class.class))).thenReturn(Collections.emptySet());
         when(mockStockHistory.getPrice()).thenReturn(BigInteger.TEN);
-//        when(mockStock.getTotalQuantity()).thenReturn(BigInteger.valueOf(50l));
 
         TransactionType transactionType = TransactionType.BUY;
 
@@ -104,11 +152,9 @@ class TransactionServiceTest {
         verify(mockStockRepo).findById(STOCK_SYMBOL);
         verify(mockStockHistoryRepo).findFirst1ByStockOrderByTime(mockStock);
         verify(mockStockService).getCurrentlyTradeableStockQuantity(mockStock);
-//        verify(mockValidator).validate(samePropertyValuesAs(trader.buildPortfolio()), TraderPortfolio.class);
         assertEquals(1, traderDao.getTrades().stream().filter(trade -> VerifyTransactionParams(transactionType, trade)).count());
         verify(mockTraderRepo, never()).save(traderDao);
     }
-
 
     @Test
     void handleTransaction_rejectsInvalidTransaction_insufficentFunds_andDoesNotSaveToBD() {
@@ -128,6 +174,32 @@ class TransactionServiceTest {
         verify(mockStockHistoryRepo).findFirst1ByStockOrderByTime(mockStock);
 //        verify(mockValidator).validate(samePropertyValuesAs(trader.buildPortfolio()), TraderPortfolio.class);
         assertEquals(1, traderDao.getTrades().stream().filter(trade -> VerifyTransactionParams(transactionType, trade)).count());
+        verify(mockTraderRepo, never()).save(traderDao);
+    }
+
+    @Test
+    void handleTransaction_rejectsInvalidTransaction_NonExistentStock_andDoesNotSaveToBD() {
+        when(mockStockHistoryRepo.findFirst1ByStockOrderByTime(any(Stock.class))).thenReturn(Optional.empty());
+        when(mockStockRepo.findById(anyString())).thenReturn(Optional.of(mockStock));
+
+        transactionService.handleTransaction(transactionRequest, traderDao);
+
+        verify(mockStockRepo).findById(STOCK_SYMBOL);
+        verify(mockStockHistoryRepo).findFirst1ByStockOrderByTime(mockStock);
+        assertNull(traderDao.getTrades());
+        verify(mockTraderRepo, never()).save(traderDao);
+    }
+
+    @Test
+    void handleTransaction_rejectsInvalidTransaction_NotValid_andDoesNotSaveToBD() {
+        when(mockStockHistoryRepo.findFirst1ByStockOrderByTime(any(Stock.class))).thenReturn(Optional.empty());
+        when(mockStockRepo.findById(anyString())).thenReturn(Optional.of(mockStock));
+
+        transactionService.handleTransaction(transactionRequest, null);
+
+        verify(mockStockRepo).findById(STOCK_SYMBOL);
+        verify(mockStockHistoryRepo).findFirst1ByStockOrderByTime(mockStock);
+        assertNull(traderDao.getTrades());
         verify(mockTraderRepo, never()).save(traderDao);
     }
 
