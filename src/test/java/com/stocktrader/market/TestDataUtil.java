@@ -38,7 +38,7 @@ public class TestDataUtil {
     public Transaction generateTransaction(GenerateTransactionParams params) {
         Transaction transaction = new Transaction();
         StockHistory stockHistory = new StockHistory();
-        stockHistory.price = BigInteger.valueOf(random.nextInt(params.getPrice()));
+        stockHistory.price = BigInteger.valueOf(random.nextInt(params.getPrice()) + 1);
         stockHistory.stock = validStocks[random.nextInt(validStocks.length)];
         transaction.setStockTraded(stockHistory);
         transaction.setTransactionType(params.getTransactionType());
