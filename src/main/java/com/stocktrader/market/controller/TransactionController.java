@@ -1,17 +1,22 @@
 package com.stocktrader.market.controller;
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.stocktrader.market.model.dao.TraderDao;
+import com.stocktrader.market.model.dto.ErrorResponse;
 import com.stocktrader.market.model.dto.TransactionRequest;
 import com.stocktrader.market.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.Instant;
 
 import static com.stocktrader.market.filters.TraderFilter.TRADER_SESSION_ATTRIBUTE;
 
@@ -22,6 +27,8 @@ public class TransactionController {
 
     @Autowired
     TransactionService transactionService;
+    @Autowired
+    MessageSource messageSource;
     private TraderDao trader;
 
     @ModelAttribute
@@ -46,6 +53,14 @@ public class TransactionController {
         }
 //        }
         return ret;
+    }
 
+    @ExceptionHandler({MethodArgumentNotValidException.class, InvalidFormatException.class})
+    public HttpEntity<ErrorResponse> constraintViolation(HttpServletRequest req, Exception e) {
+        ErrorResponse ret = new ErrorResponse();
+        ret.setTimestamp(Instant.now());
+        ret.setError("Constraint Violation Exception");
+        ret.setMessage("Failed to validate TransactionRequest");
+        return new ResponseEntity<>(ret, HttpStatus.BAD_REQUEST);
     }
 }
