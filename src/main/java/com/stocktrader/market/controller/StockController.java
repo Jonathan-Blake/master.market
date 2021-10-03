@@ -1,6 +1,10 @@
 package com.stocktrader.market.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.stocktrader.market.model.dao.TraderDao;
 import com.stocktrader.market.model.dto.StockResponse;
+import com.stocktrader.market.model.ref.ReportFormat;
+import com.stocktrader.market.service.ReportService;
 import com.stocktrader.market.service.StockService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -17,8 +21,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 
+import static com.stocktrader.market.filters.TraderFilter.TRADER_SESSION_ATTRIBUTE;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -31,6 +37,7 @@ public class StockController {
     StockService stockService;
     @Autowired
     PagedResourcesAssembler<StockResponse> assembler;
+    private ReportService reportService;
 
     @GetMapping()
     public HttpEntity<PagedModel<EntityModel<StockResponse>>> getStocksCurrentPrice(@RequestParam(defaultValue = "20") Integer size, @RequestParam(defaultValue = "0") Integer page) {
@@ -42,6 +49,22 @@ public class StockController {
         System.out.println("Returning Stocks " + Arrays.toString(ret.getContent().toArray()));
 
         return new ResponseEntity<>(ret, HttpStatus.OK);
+    }
+
+    @GetMapping("/report")
+    public HttpEntity<String> getStocksCurrentPriceReport(@RequestParam(defaultValue = "20") Integer size, @RequestParam(defaultValue = "0") Integer page,
+                                                          @RequestParam ReportFormat reportFormat, HttpServletRequest request) {
+        Page<StockResponse> stockPage = stockService.getStocksCurrentPrice(PageRequest.of(page, size));
+        TraderDao trader = (TraderDao) request.getAttribute(TRADER_SESSION_ATTRIBUTE);
+
+        ResponseEntity<String> ret;
+        try {
+            reportService.sendReport(stockPage, reportFormat, trader);
+            ret = new ResponseEntity<>(HttpStatus.ACCEPTED);
+        } catch (JsonProcessingException e) {
+            ret = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return ret;
     }
 
     @GetMapping("/{symbol}")
