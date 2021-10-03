@@ -5,6 +5,8 @@ import com.stocktrader.market.model.dao.Transaction;
 import com.stocktrader.market.model.dto.TraderPortfolio;
 import com.stocktrader.market.repo.TransactionRepo;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.http.HttpEntity;
@@ -34,6 +36,7 @@ public class TraderController {
     private ModelMapper mapper;
     @Autowired
     private PagedResourcesAssembler<Transaction> pagedResourcesAssembler;
+    private Logger logger = LoggerFactory.getLogger(TraderController.class);
 
     @ModelAttribute
     void getTrader(HttpServletRequest request) {
@@ -43,6 +46,7 @@ public class TraderController {
 
     @GetMapping("/portfolio")
     public HttpEntity<TraderPortfolio> getPortfolio() {
+        logger.info("Retrieving Portfolio : ( {} )", trader.getId());
         final TraderPortfolio traderPortfolio = TraderPortfolio.buildPortfolio(trader);
         traderPortfolio.add(
                 linkTo(methodOn(this.getClass()).getPortfolio()).withSelfRel()

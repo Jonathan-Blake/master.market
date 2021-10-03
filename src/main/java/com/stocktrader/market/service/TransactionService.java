@@ -1,7 +1,5 @@
 package com.stocktrader.market.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stocktrader.market.model.dao.TraderDao;
 import com.stocktrader.market.model.dao.Transaction;
 import com.stocktrader.market.model.dto.TraderPortfolio;
@@ -11,6 +9,8 @@ import com.stocktrader.market.repo.StockRepo;
 import com.stocktrader.market.repo.TraderRepo;
 import com.stocktrader.market.repo.TransactionRepo;
 import com.stocktrader.market.service.exceptions.MissingStockException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -22,6 +22,7 @@ import javax.validation.Validator;
 import java.math.BigInteger;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Set;
 
 @Service
@@ -39,30 +40,31 @@ public class TransactionService {
     Validator validator;
     @Autowired
     private StockRepo stockRepo;
+    private Logger logger = LoggerFactory.getLogger(TransactionService.class);
 
     @Transactional(rollbackOn = {SQLException.class, ValidationException.class})
     public boolean handleTransaction(final TransactionRequest transactionRequest, final TraderDao user) {
         boolean ret = false;
 
-        System.out.println("Transacting");
+        logger.info("Beginning Transaction : ( {}, {} {} {} )", user.getId(), transactionRequest.getTransactionType(), transactionRequest.getQuantity(), transactionRequest.getStock());
         final Transaction constructedTransaction;
         try {
             constructedTransaction = constructTransactionResults(transactionRequest, user);
         } catch (MissingStockException e) {
-            System.out.println("Invalid Stock Request");
+            logger.info("Transaction Failed : ( {} Invalid Request: Stock not found}", user.getId());
             return false;
         }
         final Set<ConstraintViolation<Transaction>> constraintViolationsTransaction = validator.validate(constructedTransaction);
         if (!constraintViolationsTransaction.isEmpty()) {
-            System.out.println("Invalid Transaction");
+            logger.info("Transaction Failed : ( {} Invalid Request: Constraint violations: {} )", user.getId(), Arrays.toString(constraintViolationsTransaction.toArray()));
             return false;
         }
         final TraderPortfolio traderPortfolio = TraderPortfolio.buildPortfolio(user);// User is not selling more than they own
-        System.out.println("Validating");
+        logger.info("Validating Portfolio Post transaction : ( {}: {} )", user.getId(), traderPortfolio.get().get(transactionRequest.getStock()).getQuantity());
         final Set<ConstraintViolation<TraderPortfolio>> validationErrors = validator.validate(traderPortfolio);
 
         if (validationErrors.isEmpty()) {
-            System.out.println("Validated : " + transactionRequest.getStock());
+            logger.info("Successfully Validated Portfolio : ( {} )", user.getId());
             switch (transactionRequest.getTransactionType()) {
                 case BUY -> {
                     final BigInteger currentlyTradeableStockQuantity = stockService.getCurrentlyTradeableStockQuantity(constructedTransaction.getStockTraded().getStock());
@@ -77,8 +79,9 @@ public class TransactionService {
                         transactionRepo.save(constructedTransaction);
                         traderRepo.save(user);
                         ret = true;
+                        logger.info("Transaction Successfully Completed: ( {} )", user.getId());
                     } else {
-                        System.out.println("Cannot make transaction of requested quantity");
+                        logger.info("Transaction Failed : ( {} Invalid Request: Could not purchase quantity: {} quantity available {} )", user.getId(), transactionRequest.getQuantity(), currentlyTradeableStockQuantity);
                     }
                 }
                 case SELL -> {
@@ -86,14 +89,15 @@ public class TransactionService {
                         transactionRepo.save(constructedTransaction);
                         traderRepo.save(user);
                         ret = true;
+                        logger.info("Transaction Successfully Completed: ( {} )", user.getId());
                     } else {
-                        System.out.println("User Does not own sufficient stocks ");
+                        logger.info("Transaction Failed : { {} Invalid Request: Could sell quantity: {} user owns {} }", user.getId(), transactionRequest.getQuantity(), traderPortfolio.get().get(transactionRequest.getStock()).getQuantity().add(transactionRequest.getQuantity()));
                     }
                 }
-                default -> System.out.println("Unrecognised Transaction Type, Implement " + transactionRequest.getTransactionType().name());
+                default -> logger.info("Transaction Failed : ( {} Invalid Request: Did not recognise transaction Type: {} )", user.getId(), transactionRequest.getTransactionType().name());
             }
         } else {
-            System.out.println("Validation Failed");
+            logger.info("Transaction Failed : ( {} Invalid Portfolio: Constraint violations: {} )", user.getId(), Arrays.toString(validationErrors.toArray()));
         }
         return ret;
     }
@@ -102,23 +106,15 @@ public class TransactionService {
     Cannot transact negative quantites and transaction cannot exceed total available in market.
      */
     private boolean stockHasSufficientQuantity(final BigInteger totalStock, final BigInteger quantityAfterTransaction) {
-        final boolean b = 0 <= quantityAfterTransaction.compareTo(BigInteger.ZERO) && totalStock.compareTo(quantityAfterTransaction) >= 0;
-        System.out.println("Sufficient Quantity : " + b);
-        return b;
+        return 0 <= quantityAfterTransaction.compareTo(BigInteger.ZERO) && totalStock.compareTo(quantityAfterTransaction) >= 0;
     }
 
     private @Validated
     Transaction constructTransactionResults(final TransactionRequest transactionRequest, final TraderDao user) throws MissingStockException {
         final Transaction newTrade = new Transaction();
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            System.out.println("transactionRequest : " + mapper.writeValueAsString(transactionRequest));
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
         newTrade.setTransactionType(transactionRequest.getTransactionType());
         newTrade.setQuantity(transactionRequest.getQuantity());
-        System.out.println("Retrieving Stock");
+        logger.info("Retrieving Requested Stock : ( {}, {} )", user.getId(), transactionRequest.getStock());
         stockRepo.findById(transactionRequest.getStock())
                 .ifPresentOrElse(
                         stock1 -> newTrade.setStockTraded(
@@ -129,9 +125,8 @@ public class TransactionService {
                             throw new MissingStockException(transactionRequest.getStock());
                         }
                 );
-
         newTrade.setTime(Instant.now());
-        System.out.println("Adding Trade");
+        logger.info("Adding Stock to Transaction : ( {} )", user.getId());
         user.addNewTrade(newTrade);
         return newTrade;
     }

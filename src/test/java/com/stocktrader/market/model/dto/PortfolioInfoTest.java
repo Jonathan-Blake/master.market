@@ -1,7 +1,5 @@
 package com.stocktrader.market.model.dto;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stocktrader.market.model.dao.StockHistory;
 import com.stocktrader.market.model.dao.Transaction;
 import com.stocktrader.market.model.ref.TransactionType;
@@ -38,13 +36,6 @@ class PortfolioInfoTest {
 
         PortfolioInfo portfolioInfo = new PortfolioInfo(mockStockHistory);
         PortfolioInfo ret = portfolioInfo.linkNewTrade(mockTransaction);
-        ObjectMapper mapper = new ObjectMapper(
-        );
-        try {
-            System.out.println("RET " + mapper.writeValueAsString(ret));
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
         assertEquals(CURRENT_PRICE, ret.currentPrice);
         assertEquals(ORIGINAL_PRICE, ret.averagePurchase);
         assertEquals(QUANTITY, ret.quantity);
@@ -63,13 +54,7 @@ class PortfolioInfoTest {
             when(mockStockHistory.getPrice()).thenReturn(ORIGINAL_PRICE);
             ret = portfolioInfo.linkNewTrade(mockTransaction);
         }
-        ObjectMapper mapper = new ObjectMapper(
-        );
-        try {
-            System.out.println("RET " + mapper.writeValueAsString(ret));
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
+
         assertEquals(CURRENT_PRICE, ret.currentPrice);
         assertEquals(ORIGINAL_PRICE, ret.averagePurchase);
         assertEquals(QUANTITY.multiply(BigInteger.valueOf(5L)), ret.quantity);
@@ -89,13 +74,7 @@ class PortfolioInfoTest {
             when(mockStockHistory.getPrice()).thenReturn(BigInteger.valueOf(price));
             ret = portfolioInfo.linkNewTrade(mockTransaction);
         }
-        ObjectMapper mapper = new ObjectMapper(
-        );
-        try {
-            System.out.println("RET " + mapper.writeValueAsString(ret));
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
+
         assertEquals(CURRENT_PRICE, ret.currentPrice);
         assertEquals(BigInteger.valueOf(45L), ret.averagePurchase);
         assertEquals(QUANTITY.multiply(BigInteger.valueOf(6L)), ret.quantity);

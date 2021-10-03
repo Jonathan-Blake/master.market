@@ -140,6 +140,7 @@ class TransactionServiceTest {
         when(mockStockHistoryRepo.findFirst1ByStockOrderByTime(any(Stock.class))).thenReturn(Optional.of(mockStockHistory));
         when(mockStockHistory.getStock()).thenReturn(mockStock);
         when(mockStockRepo.findById(anyString())).thenReturn(Optional.of(mockStock));
+        when(mockStock.getSymbol()).thenReturn(STOCK_SYMBOL);
         when(mockStockService.getCurrentlyTradeableStockQuantity(any(Stock.class))).thenReturn(BigInteger.valueOf(50L));
         when(mockValidator.validate(any(TraderPortfolio.class), any(Class.class))).thenReturn(Collections.emptySet());
         when(mockValidator.validate(any(Transaction.class), any(Class.class))).thenReturn(Collections.emptySet());
@@ -160,6 +161,7 @@ class TransactionServiceTest {
     void handleTransaction_rejectsInvalidTransaction_insufficentFunds_andDoesNotSaveToBD() {
         when(mockStockHistoryRepo.findFirst1ByStockOrderByTime(any(Stock.class))).thenReturn(Optional.of(mockStockHistory));
         when(mockStockRepo.findById(anyString())).thenReturn(Optional.of(mockStock));
+        when(mockStock.getSymbol()).thenReturn(STOCK_SYMBOL);
         when(mockStockHistory.getStock()).thenReturn(mockStock);
         when(mockStockHistory.getPrice()).thenReturn(BigInteger.TEN);
 
@@ -195,7 +197,7 @@ class TransactionServiceTest {
         when(mockStockHistoryRepo.findFirst1ByStockOrderByTime(any(Stock.class))).thenReturn(Optional.empty());
         when(mockStockRepo.findById(anyString())).thenReturn(Optional.of(mockStock));
 
-        transactionService.handleTransaction(transactionRequest, null);
+        transactionService.handleTransaction(transactionRequest, traderDao);
 
         verify(mockStockRepo).findById(STOCK_SYMBOL);
         verify(mockStockHistoryRepo).findFirst1ByStockOrderByTime(mockStock);

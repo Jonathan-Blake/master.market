@@ -10,6 +10,8 @@ import com.stocktrader.market.repo.StockHistoryRepo;
 import com.stocktrader.market.repo.StockRepo;
 import com.stocktrader.market.repo.TransactionRepo;
 import com.stocktrader.market.util.AtomicBigInt;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -33,10 +35,12 @@ public class StockService {
     StockHistoryRepo stockHistoryRepo;
     @Autowired
     TransactionRepo transactionRepo;
+    private Logger logger = LoggerFactory.getLogger(StockService.class);
 
     public Page<StockResponse> getStocksCurrentPrice(PageRequest pageRequest) {
         //Chose not to use Page's map method because it is not parallel, due to the database calls this seemed to outweigh
         // the performance impact that synchronisation might have otherwise it mimics the logic
+        logger.info("Retrieving Stocks with Current price ( size :{}, page number :{} )", pageRequest.getPageSize(), pageRequest.getPageNumber());
         final Page<Stock> allStocks = stockRepo.findAll(pageRequest);
         final List<StockResponse> convertedList = allStocks.stream().parallel()
                 .map(stock -> buildResponse(
@@ -48,6 +52,7 @@ public class StockService {
     }
 
     public StockResponse getStockCurrentDetails(String symbol) {
+        logger.info("Retrieving Stocks with Current price ( {} )", symbol);
         Optional<Stock> stock = stockRepo.findById(symbol);
         final StockResponse[] ret = {null};
         stock.ifPresent(value -> stockHistoryRepo.findFirst1ByStockOrderByTime(value)
@@ -78,6 +83,7 @@ public class StockService {
     }
 
     public BigInteger getCurrentlyTradeableStockQuantity(Stock stock) {
+        logger.info("Calculating Tradable Quanitity ( {} )", stock.getSymbol());
         Collection<Transaction> transactions = transactionRepo.findAllByStockTraded_Stock(stock);
         var quantity = new AtomicBigInt(stock.getTotalQuantity());
         transactions.forEach(transaction -> quantity.set(

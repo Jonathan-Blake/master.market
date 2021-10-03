@@ -1,7 +1,5 @@
 package com.stocktrader.market.model.dto;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stocktrader.market.model.ITrader;
 import com.stocktrader.market.model.dao.Stock;
 import com.stocktrader.market.model.dao.StockHistory;
@@ -63,12 +61,7 @@ class TraderPortfolioTest {
 
             assertEquals(2, portfolio.size());
             assertTrue(portfolio.get().containsKey("funds"));
-            ObjectMapper mapper = new ObjectMapper();
-            try {
-                System.out.println(mapper.writeValueAsString(portfolio.get()));
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
+
             assertTrue(portfolio.get().containsKey(STOCK_CODE));
             assertEquals(BigInteger.valueOf(100), portfolio.get().get(STOCK_CODE).getTotalValue());
             assertEquals(TRADER_FUNDS.add(BigInteger.valueOf(100)), portfolio.getTotalValue());

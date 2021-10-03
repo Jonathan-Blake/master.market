@@ -3,6 +3,8 @@ package com.stocktrader.market.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stocktrader.market.model.dto.ErrorResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -19,6 +21,8 @@ public class EmailService {
 
     @Value("${spring.mail.username}")
     private String ADMIN_EMAIL;
+
+    private Logger logger = LoggerFactory.getLogger(EmailService.class);
 
     @Autowired
     private JavaMailSender emailSender;
@@ -41,6 +45,6 @@ public class EmailService {
             message.setText(text.toString());
         }
         emailSender.send(message);
-        System.out.println("Email Sent");
+        logger.info("Email Sent");
     }
 }

@@ -68,9 +68,7 @@ public class TraderPortfolio extends RepresentationModel<TraderPortfolio> {
 
     @Override
     public boolean equals(Object obj) {
-        System.out.println("In Equals");
         if (obj instanceof TraderPortfolio) {
-            System.out.println("In Equals");
             return this.portfolio.equals(((TraderPortfolio) obj).portfolio);
         } else {
             return super.equals(obj);
