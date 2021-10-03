@@ -27,7 +27,7 @@ public class StockBrokerService {
     private Random random = new Random();
     private Logger logger = LoggerFactory.getLogger(StockBrokerService.class);
 
-    @Scheduled(initialDelay = 1000, fixedRate = 10000)
+    @Scheduled(initialDelay = 300000, fixedRate = 300000)
     void updatePrices() {
         logger.info("Updating Prices");
         stockRepo.findAll().forEach(

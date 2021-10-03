@@ -48,7 +48,7 @@ class StockBrokerServiceTest {
     }
 
     @Test
-    void calculateTrend() {
+    void calculateNewPrice() {
         when(stockHistoryRepo.findFirst3ByStockOrderByTime(mockStock)).thenReturn(List.of(mockStockHistory));
         when(mockStockHistory.getPrice()).thenReturn(BigInteger.ONE);
 
@@ -95,6 +95,7 @@ class StockBrokerServiceTest {
         void calculateTrend_ForDoubleValue() {
             assertEquals(-1, service.calculateTrend(List.of(highPrice, midPrice)));
             assertEquals(1, service.calculateTrend(List.of(midPrice, highPrice)));
+            assertEquals(0, service.calculateTrend(List.of(lowPrice, lowPrice)));
         }
 
         @Test
