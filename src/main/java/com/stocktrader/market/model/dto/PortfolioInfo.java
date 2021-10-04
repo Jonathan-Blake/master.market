@@ -42,4 +42,7 @@ public class PortfolioInfo {
         return quantity;
     }
 
+    public void setPrice(BigInteger price) {
+        this.currentPrice = price;
+    }
 }

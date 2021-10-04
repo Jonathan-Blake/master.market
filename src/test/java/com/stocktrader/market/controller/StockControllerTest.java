@@ -65,7 +65,7 @@ class StockControllerTest {
     }
 
     @Test
-    void getStock_ReturnsPage() {
+    void getStock_ReturnsStock() {
         when(stockService.getStockCurrentDetails(anyString())).thenReturn(mockStock);
 
         HttpEntity<StockResponse> result = stockController.getStock(SYMBOL);

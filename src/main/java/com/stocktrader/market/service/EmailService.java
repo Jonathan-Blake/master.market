@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stocktrader.market.model.dto.ErrorResponse;
 import com.stocktrader.market.util.AutoDeletingFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
@@ -25,6 +27,8 @@ public class EmailService {
     @Value("${spring.mail.username}")
     private String ADMIN_EMAIL;
 
+    private Logger logger = LoggerFactory.getLogger(EmailService.class);
+
     @Autowired
     private JavaMailSender emailSender;
 
@@ -34,7 +38,7 @@ public class EmailService {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(ADMIN_EMAIL);
         message.setTo(ADMIN_EMAIL);
-        message.setSubject("Confirm Password");
+        message.setSubject("Exception in Server");
         StringBuilder text = new StringBuilder();
         try {
             text.append(mapper.writeValueAsString(errorResponse));
@@ -46,7 +50,7 @@ public class EmailService {
             message.setText(text.toString());
         }
         emailSender.send(message);
-        System.out.println("Email Sent");
+        logger.info("Email Sent");
     }
 
     public void sendReport(AutoDeletingFile file, String emailAddress) throws MessagingException {

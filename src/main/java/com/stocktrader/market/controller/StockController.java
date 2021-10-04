@@ -5,6 +5,8 @@ import com.stocktrader.market.model.dto.StockResponse;
 import com.stocktrader.market.model.ref.ReportFormat;
 import com.stocktrader.market.service.ReportService;
 import com.stocktrader.market.service.StockService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -36,17 +38,17 @@ public class StockController {
     StockService stockService;
     @Autowired
     PagedResourcesAssembler<StockResponse> assembler;
+    private Logger logger = LoggerFactory.getLogger(StockController.class);
     private ReportService reportService;
 
     @GetMapping()
     public HttpEntity<PagedModel<EntityModel<StockResponse>>> getStocksCurrentPrice(@RequestParam(defaultValue = "20") Integer size, @RequestParam(defaultValue = "0") Integer page) {
 
-        System.out.println("Getting Stocks " + size + "  " + page);
+        logger.info("Requested Stock page ( size: {}, page: {} )", size, page);
         Page<StockResponse> stockPage = stockService.getStocksCurrentPrice(PageRequest.of(page, size));
-        System.out.println("Building Model");
         PagedModel<EntityModel<StockResponse>> ret = assembler.toModel(stockPage, linkTo(methodOn(this.getClass()).getStocksCurrentPrice(size, page)).withSelfRel());
-        System.out.println("Returning Stocks " + Arrays.toString(ret.getContent().toArray()));
 
+        logger.info("Returning Stock page");
         return new ResponseEntity<>(ret, HttpStatus.OK);
     }
 
@@ -64,10 +66,13 @@ public class StockController {
 
     @GetMapping("/{symbol}")
     public HttpEntity<StockResponse> getStock(@PathVariable String symbol) {
+        logger.info("Requested Specific Stock page ( {} )", symbol);
         final StockResponse stockCurrentDetails = stockService.getStockCurrentDetails(symbol);
         if (stockCurrentDetails != null) {
+            logger.info("Returning Stock");
             return new ResponseEntity<>(stockCurrentDetails, HttpStatus.OK);
         } else {
+            logger.info("Stock not Found ( {} )", symbol);
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
