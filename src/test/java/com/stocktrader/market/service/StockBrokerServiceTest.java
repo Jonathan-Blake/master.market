@@ -49,7 +49,7 @@ class StockBrokerServiceTest {
 
     @Test
     void calculateNewPrice() {
-        when(stockHistoryRepo.findFirst3ByStockOrderByTime(mockStock)).thenReturn(List.of(mockStockHistory));
+        when(stockHistoryRepo.findFirst3ByStockOrderByTimeDesc(mockStock)).thenReturn(List.of(mockStockHistory));
         when(mockStockHistory.getPrice()).thenReturn(BigInteger.ONE);
 
         service.calculateNewPrice(mockStock);

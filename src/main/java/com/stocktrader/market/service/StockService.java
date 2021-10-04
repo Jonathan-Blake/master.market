@@ -45,7 +45,7 @@ public class StockService {
         final List<StockResponse> convertedList = allStocks.stream().parallel()
                 .map(stock -> buildResponse(
                         stock,
-                        stockHistoryRepo.findFirst1ByStockOrderByTime(stock).orElse(new StockHistory()),
+                        stockHistoryRepo.findFirst1ByStockOrderByTimeDesc(stock).orElse(new StockHistory()),
                         getCurrentlyTradeableStockQuantity(stock))
                 ).collect(Collectors.toList());
         return new PageImpl<>(convertedList, allStocks.getPageable(), allStocks.getTotalElements());
@@ -55,7 +55,7 @@ public class StockService {
         logger.info("Retrieving Stocks with Current price ( {} )", symbol);
         Optional<Stock> stock = stockRepo.findById(symbol);
         final StockResponse[] ret = {null};
-        stock.ifPresent(value -> stockHistoryRepo.findFirst1ByStockOrderByTime(value)
+        stock.ifPresent(value -> stockHistoryRepo.findFirst1ByStockOrderByTimeDesc(value)
                 .ifPresent(sp -> ret[0] = buildResponse(value, sp, getCurrentlyTradeableStockQuantity(value))));
         return ret[0];
 
@@ -83,7 +83,7 @@ public class StockService {
     }
 
     public BigInteger getCurrentlyTradeableStockQuantity(Stock stock) {
-        logger.info("Calculating Tradable Quanitity ( {} )", stock.getSymbol());
+        logger.trace("Calculating Tradable Quanitity ( {} )", stock.getSymbol());
         Collection<Transaction> transactions = transactionRepo.findAllByStockTraded_Stock(stock);
         var quantity = new AtomicBigInt(stock.getTotalQuantity());
         transactions.forEach(transaction -> quantity.set(

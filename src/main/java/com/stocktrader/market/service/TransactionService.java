@@ -118,7 +118,7 @@ public class TransactionService {
         stockRepo.findById(transactionRequest.getStock())
                 .ifPresentOrElse(
                         stock1 -> newTrade.setStockTraded(
-                                stockHistoryRepo.findFirst1ByStockOrderByTime(stock1)
+                                stockHistoryRepo.findFirst1ByStockOrderByTimeDesc(stock1)
                                         .orElseThrow(() -> new MissingStockException(transactionRequest.getStock()))
                         ),
                         () -> {

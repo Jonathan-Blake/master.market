@@ -101,13 +101,13 @@ class StockServiceTest {
     @Test
     void getStockCurrentPrice_whenThereIsAStock() {
         when(stockRepo.findById(anyString())).thenReturn(Optional.of(stockList.get(0)));
-        when(stockHistoryRepo.findFirst1ByStockOrderByTime(any(Stock.class))).thenReturn(Optional.of(stockHistoryList.get(0)));
+        when(stockHistoryRepo.findFirst1ByStockOrderByTimeDesc(any(Stock.class))).thenReturn(Optional.of(stockHistoryList.get(0)));
 
         lenient().when(transactionRepo.findAllByStockTraded_Stock(any(Stock.class))).thenReturn(List.of());
 
         StockResponse stockPrice = stockService.getStockCurrentDetails("AAA");
 
-        verify(stockHistoryRepo).findFirst1ByStockOrderByTime(stockList.get(0));
+        verify(stockHistoryRepo).findFirst1ByStockOrderByTimeDesc(stockList.get(0));
         assertEquals(stockService.buildResponse(stockList.get(0), stockHistoryList.get(0), QUANTITY), stockPrice);
     }
 

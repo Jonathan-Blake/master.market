@@ -36,10 +36,10 @@ public class StockBrokerService {
     }
 
     void calculateNewPrice(final Stock stock) {
-        List<StockHistory> mostRecentPrices = stockHistoryRepo.findFirst3ByStockOrderByTime(stock);
+        List<StockHistory> mostRecentPrices = stockHistoryRepo.findFirst3ByStockOrderByTimeDesc(stock);
         int trend = calculateTrend(mostRecentPrices);
 
-        double priceModifier = (random.nextDouble() + .5 + trend) * .1;
+        double priceModifier = (random.nextDouble() + .5 + trend) * .05;
         final StockHistory mostRecentPrice = mostRecentPrices.get(mostRecentPrices.size() - 1);
         BigDecimal modifiedPrice = BigDecimal.valueOf(mostRecentPrice.getPrice().floatValue() * (1 + priceModifier));
         StockHistory newPrice = new StockHistory();

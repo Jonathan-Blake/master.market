@@ -13,9 +13,9 @@ import java.util.Optional;
 
 @Repository
 public interface StockHistoryRepo extends PagingAndSortingRepository<StockHistory, Long> {
-    Optional<StockHistory> findFirst1ByStockOrderByTime(Stock stock);
+    Optional<StockHistory> findFirst1ByStockOrderByTimeDesc(Stock stock);
 
-    List<StockHistory> findFirst3ByStockOrderByTime(Stock stock);
+    List<StockHistory> findFirst3ByStockOrderByTimeDesc(Stock stock);
 
     Collection<StockHistory> findAllByStockAndTimeBetween(Stock stock, Instant startDate, Instant endDate);
 
