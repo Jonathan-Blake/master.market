@@ -1,6 +1,5 @@
 package com.stocktrader.market.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.stocktrader.market.model.dao.TraderDao;
 import com.stocktrader.market.model.dto.StockResponse;
 import com.stocktrader.market.model.ref.ReportFormat;
@@ -53,17 +52,13 @@ public class StockController {
 
     @GetMapping("/report")
     public HttpEntity<String> getStocksCurrentPriceReport(@RequestParam(defaultValue = "20") Integer size, @RequestParam(defaultValue = "0") Integer page,
-                                                          @RequestParam ReportFormat reportFormat, HttpServletRequest request) {
+                                                          @RequestParam ReportFormat reportFormat, HttpServletRequest request) throws Exception {
         Page<StockResponse> stockPage = stockService.getStocksCurrentPrice(PageRequest.of(page, size));
         TraderDao trader = (TraderDao) request.getAttribute(TRADER_SESSION_ATTRIBUTE);
 
         ResponseEntity<String> ret;
-        try {
-            reportService.sendReport(stockPage, reportFormat, trader);
-            ret = new ResponseEntity<>(HttpStatus.ACCEPTED);
-        } catch (JsonProcessingException e) {
-            ret = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        reportService.sendReport(stockPage, reportFormat, trader);
+        ret = new ResponseEntity<>(HttpStatus.ACCEPTED);
         return ret;
     }
 

@@ -8,6 +8,7 @@ import com.stocktrader.market.model.dao.Stock;
 import com.stocktrader.market.model.dao.StockHistory;
 import com.stocktrader.market.model.dao.Transaction;
 import com.stocktrader.market.util.AtomicBigInt;
+import org.springframework.hateoas.Links;
 import org.springframework.hateoas.RepresentationModel;
 
 import java.math.BigInteger;
@@ -53,6 +54,12 @@ public class TraderPortfolio extends RepresentationModel<TraderPortfolio> {
 
     public Map<String, PortfolioInfo> get() {
         return portfolio;
+    }
+
+    @Override
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    public Links getLinks() {
+        return super.getLinks();
     }
 
     @Override

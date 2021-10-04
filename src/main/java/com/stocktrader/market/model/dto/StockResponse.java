@@ -1,6 +1,7 @@
 package com.stocktrader.market.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.hateoas.Links;
 import org.springframework.hateoas.RepresentationModel;
 
 import java.math.BigInteger;
@@ -78,7 +79,13 @@ public class StockResponse extends RepresentationModel<StockResponse> {
         this.closeValue = closeValue;
     }
 
-    @JsonProperty
+    @Override
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    public Links getLinks() {
+        return super.getLinks();
+    }
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     BigInteger getGains() {
         return price.subtract(openValue);
     }
