@@ -33,7 +33,7 @@ public class EmailService {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(ADMIN_EMAIL);
         message.setTo(ADMIN_EMAIL);
-        message.setSubject("Confirm Password");
+        message.setSubject("Exception in Server");
         StringBuilder text = new StringBuilder();
         try {
             text.append(mapper.writeValueAsString(errorResponse));
