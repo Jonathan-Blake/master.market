@@ -63,7 +63,7 @@ class TraderPortfolioTest {
             assertTrue(portfolio.get().containsKey("funds"));
 
             assertTrue(portfolio.get().containsKey(STOCK_CODE));
-            assertEquals(BigInteger.valueOf(100), portfolio.get().get(STOCK_CODE).getTotalValue());
+            assertEquals(BigInteger.valueOf(100), portfolio.get().get(STOCK_CODE).calculateTotalValue());
             assertEquals(TRADER_FUNDS.add(BigInteger.valueOf(100)), portfolio.getTotalValue());
         }
     }

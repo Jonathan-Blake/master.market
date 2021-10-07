@@ -13,7 +13,7 @@ public class ValuesArePositiveValidator implements ConstraintValidator<ValuesAre
 
     public boolean isValid(Map<String, PortfolioInfo> value, ConstraintValidatorContext context) {
         return value.values().stream()
-                .map(PortfolioInfo::getTotalValue)
+                .map(PortfolioInfo::calculateTotalValue)
                 .noneMatch(num -> num.compareTo(BigInteger.ZERO) < 0);
     }
 }

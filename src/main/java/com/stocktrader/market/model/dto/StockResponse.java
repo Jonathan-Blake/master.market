@@ -86,7 +86,7 @@ public class StockResponse extends RepresentationModel<StockResponse> {
     }
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    BigInteger getGains() {
+    public BigInteger getGains() {
         return price.subtract(openValue);
     }
 }

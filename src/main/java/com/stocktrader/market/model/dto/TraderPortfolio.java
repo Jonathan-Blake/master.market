@@ -44,7 +44,7 @@ public class TraderPortfolio extends RepresentationModel<TraderPortfolio> {
 
     public BigInteger getTotalValue() {
         var value = new AtomicBigInt();
-        portfolio.values().forEach(portfolioInfo -> value.incrementAndGet(portfolioInfo.getTotalValue()));
+        portfolio.values().forEach(portfolioInfo -> value.incrementAndGet(portfolioInfo.calculateTotalValue()));
         return value.get().or(BigInteger.ZERO);
     }
 

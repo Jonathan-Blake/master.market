@@ -65,7 +65,7 @@ public class EmailService {
         } else {
             helper.setText("Here is the report you requested.");
             FileSystemResource fileSystemResource = new FileSystemResource(file.getFile());
-            helper.addAttachment("Invoice", fileSystemResource);
+            helper.addAttachment("report" + file.getFormat(), fileSystemResource);
         }
 
         emailSender.send(message);

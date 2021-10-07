@@ -1,4 +1,4 @@
-package com.stocktrader.market.service.reportconvertor;
+package com.stocktrader.market.service.report.convertor;
 
 import com.stocktrader.market.util.AutoDeletingFile;
 

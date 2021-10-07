@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Arrays;
 
 import static com.stocktrader.market.filters.TraderFilter.TRADER_SESSION_ATTRIBUTE;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -37,9 +36,10 @@ public class StockController {
     @Autowired
     StockService stockService;
     @Autowired
+    private ReportService reportService;
+    @Autowired
     PagedResourcesAssembler<StockResponse> assembler;
     private Logger logger = LoggerFactory.getLogger(StockController.class);
-    private ReportService reportService;
 
     @GetMapping()
     public HttpEntity<PagedModel<EntityModel<StockResponse>>> getStocksCurrentPrice(@RequestParam(defaultValue = "20") Integer size, @RequestParam(defaultValue = "0") Integer page) {
@@ -58,10 +58,8 @@ public class StockController {
         Page<StockResponse> stockPage = stockService.getStocksCurrentPrice(PageRequest.of(page, size));
         TraderDao trader = (TraderDao) request.getAttribute(TRADER_SESSION_ATTRIBUTE);
 
-        ResponseEntity<String> ret;
         reportService.sendReport(stockPage, reportFormat, trader);
-        ret = new ResponseEntity<>(HttpStatus.ACCEPTED);
-        return ret;
+        return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
     @GetMapping("/{symbol}")

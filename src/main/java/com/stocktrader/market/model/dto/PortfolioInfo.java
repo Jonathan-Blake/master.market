@@ -19,6 +19,9 @@ public class PortfolioInfo {
         this.currentPrice = mostRecentPrice.getPrice();
     }
 
+    public PortfolioInfo() {
+    }
+
     public PortfolioInfo linkNewTrade(Transaction trade) {
         if (trade.getTransactionType() == TransactionType.BUY &&
                 trade.getQuantity().compareTo(BigInteger.ZERO) > 0) {
@@ -34,12 +37,20 @@ public class PortfolioInfo {
         return this;
     }
 
-    public BigInteger getTotalValue() {
+    public BigInteger calculateTotalValue() {
         return currentPrice.multiply(quantity);
     }
 
     public BigInteger getQuantity() {
         return quantity;
+    }
+
+    public BigInteger getCurrentPrice() {
+        return currentPrice;
+    }
+
+    public BigInteger getAveragePurchase() {
+        return averagePurchase;
     }
 
     public void setPrice(BigInteger price) {
